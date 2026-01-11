@@ -4,7 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "dotenvx run -f .env -f .env.local -- pnpm -r --parallel run dev"
+    "dev": "dotenvx run -f .env.local -- pnpm -r --parallel run dev",
+    "db:push": "dotenvx run -f .env.local -- pnpm --filter @bbs/server run db:push",
+    "db:mgg": "dotenvx run -f .env.local -- pnpm --filter @bbs/server run db:mgg",
+    "db:mgr": "dotenvx run -f .env.local -- pnpm --filter @bbs/server run db:mgr",
+    "better-auth:generate":  "dotenvx run -f .env.local -- pnpm --filter @bbs/server run better-auth:generate"
   },
   "keywords": [],
   "author": "",

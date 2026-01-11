@@ -3,30 +3,89 @@ import {
 	type FastifyTRPCPluginOptions,
 	fastifyTRPCPlugin,
 } from "@trpc/server/adapters/fastify";
-import fastify from "fastify";
+import Fastify from "fastify";
+import { toNodeHandler } from "better-auth/node";
 import { createContext } from "./context";
 import { type AppRouter, appRouter } from "./routers";
+import { auth } from "./auth";
 
-const server = fastify({
+const server = Fastify({
 	routerOptions: {
 		maxParamLength: 50000,
 	},
+	logger: true
 });
 
+
+
 // use envs
-const { SERVER_PREFIX = "/trpc", SERVER_PORT = 4000 } = process.env;
+const { SERVER_PREFIX = "/trpc", SERVER_PORT = 4000, FRONTEND_URL = 'http://localhost:3000' } = process.env;
 
 (async () => {
 	try {
-		// 2. [关键] 在注册 tRPC 之前注册 CORS
+		// 2. 配置cors
 		await server.register(cors, {
-			// 允许所有来源（开发环境方便），或者指定前端地址 ["http://localhost:5173"]
 			origin: true,
-			credentials: true, // 如果你需要传 cookie/token 必须开启
+			credentials: true, 
 			methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 		});
 
-		// 3. 注册 tRPC
+		// server.addContentTypeParser(
+        //     "application/json",
+        //     { parseAs: "string" },
+        //     (req, body, done) => {
+        //         // 针对
+        //         if (req.url.startsWith("/api/auth")) {
+        //             done(null, body);
+        //         } else {
+        //             // 其他路由正常解析 JSON
+        //             try {
+        //                 done(null, JSON.parse(body as string));
+        //             } catch (err: any) {
+        //                 err.statusCode = 400;
+        //                 done(err, undefined);
+        //             }
+        //         }
+        //     }
+        // );
+
+		// 3. 配置better-auth
+		// Register authentication endpoint
+		server.route({
+			method: ["GET", "POST"],
+			url: "/api/auth/*",
+			async handler(request, reply) {
+				try {
+				// Construct request URL
+				const url = new URL(request.url, `http://${request.headers.host}`);
+				
+				// Convert Fastify headers to standard Headers object
+				const headers = new Headers();
+				Object.entries(request.headers).forEach(([key, value]) => {
+					if (value) headers.append(key, value.toString());
+				});
+				// Create Fetch API-compatible request
+				const req = new Request(url.toString(), {
+					method: request.method,
+					headers,
+					...(request.body ? { body: JSON.stringify(request.body) } : {}),
+				});
+				// Process authentication request
+				const response = await auth.handler(req);
+				// Forward response to client
+				reply.status(response.status);
+				response.headers.forEach((value, key) => reply.header(key, value));
+				reply.send(response.body ? await response.text() : null);
+				} catch (error: any) {
+				reply.status(500).send({ 
+					error: "Internal authentication error",
+					code: "AUTH_FAILURE"
+				});
+				}
+			}
+		});
+
+		// 3. 挂载trpc专属路径
 		await server.register(fastifyTRPCPlugin, {
 			prefix: SERVER_PREFIX,
 			trpcOptions: {
