@@ -4,9 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "pnpm -r --parallel run dev"
+    "dev": "dotenvx run -f .env -f .env.local -- pnpm -r --parallel run dev"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@dotenvx/dotenvx": "^1.51.4"
+  }
 }

@@ -1,6 +1,6 @@
 import {
   fastifyTRPCPlugin,
-  FastifyTRPCPluginOptions,
+  type FastifyTRPCPluginOptions,
 } from "@trpc/server/adapters/fastify";
 import fastify from "fastify";
 import cors from "@fastify/cors";
@@ -13,8 +13,15 @@ const server = fastify({
   },
 });
 
+// use envs
+const { 
+  SERVER_PREFIX = "/trpc",
+  SERVER_PORT = 4000
+} = process.env;
 
 (async () => {
+
+
   try {
     // 2. [关键] 在注册 tRPC 之前注册 CORS
     await server.register(cors, {
@@ -26,7 +33,7 @@ const server = fastify({
 
     // 3. 注册 tRPC
     await server.register(fastifyTRPCPlugin, {
-      prefix: "/trpc",
+      prefix: SERVER_PREFIX,
       trpcOptions: {
         router: appRouter,
         createContext,
@@ -36,8 +43,8 @@ const server = fastify({
       } satisfies FastifyTRPCPluginOptions<AppRouter>["trpcOptions"],
     });
 
-    await server.listen({ port: 4000 });
-    console.log("Server listen on 4000");
+    await server.listen({ port: Number(SERVER_PORT) });
+    console.log("Server start to listen on 4000");
   } catch (err) {
     server.log.error(err);
     process.exit(1);
