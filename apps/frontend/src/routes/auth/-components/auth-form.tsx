@@ -15,6 +15,8 @@ import {
 } from '@ant-design/icons';
 import { authClient } from '@/utils'; // 你的 auth client 路径
 import { useRouter } from '@tanstack/react-router'; // 或者使用你的路由库
+import { useMutation } from '@tanstack/react-query';
+import { trpc } from '@/router';
 
 // ==========================================
 // 辅助组件：发送验证码按钮
@@ -22,6 +24,9 @@ import { useRouter } from '@tanstack/react-router'; // 或者使用你的路由�
 const SendCodeButton = ({ form, type }: { form: any, type: 'sign-in' | 'sign-up' }) => {
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const {
+    mutateAsync: send,
+  } = useMutation(trpc.email.send.mutationOptions());
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -32,32 +37,12 @@ const SendCodeButton = ({ form, type }: { form: any, type: 'sign-in' | 'sign-up'
   }, [countdown]);
 
   const handleSendCode = async () => {
-    console.log("form ", form, "type ", type);
-    // try {
-    //   // 1. 校验邮箱格式
-    //   await form.validateFields(['email']);
-    //   const email = form.getFieldValue('email');
-
-    //   setLoading(true);
-      
-    //   // 2. 调用 Better-Auth 发送验证码
-    //   // 注意：这需要后端启用 email-otp 插件
-    //   const { error } = await authClient.emailOtp.sendVerificationOtp({
-    //     email,
-    //     type, // 'sign-in' | 'sign-up'
-    //   });
-
-    //   if (error) {
-    //     message.error(error.message);
-    //   } else {
-    //     message.success('验证码已发送');
-    //     setCountdown(60);
-    //   }
-    // } catch (err) {
-    //     // Form 校验失败，不做处理
-    // } finally {
-    //   setLoading(false);
-    // }
+    // await form.validateFields(['email']);
+    const email = form.getFieldValue('email');
+    console.log("email", email)
+    send({
+      to: email,
+    })
   };
 
   return (

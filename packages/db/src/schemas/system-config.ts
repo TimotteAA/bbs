@@ -41,3 +41,47 @@ export const systemConfigs = sqliteTable('system_configs', {
     enabled: integer('enabled', { mode: 'boolean' }).default(false).notNull(),
     ...$defaults,
 });
+
+/**
+ * Resend 只需要一个 API Key
+ */
+export interface ResendAuth {
+    type: 'resend';
+    apiKey: string;
+}
+
+/**
+ * 阿里云 SMTP 模式配置
+ * 对应 Nodemailer 的 Transport Options
+ */
+export interface SmtpAuth {
+    type: 'smtp';
+    /**
+     * 阿里云通常是: smtpdm.aliyun.com
+     */
+    host: string;
+    /**
+     * SSL 建议用 465，普通用 25 或 80
+     */
+    port: number;
+    /**
+     * 是否启用 SSL 安全连接 (端口 465 时设为 true)
+     */
+    secure: boolean;
+    /**
+     * 鉴权信息
+     */
+    auth: {
+        user: string;
+        pass: string;
+    };
+}
+
+export type EmailAuth = ResendAuth | SmtpAuth;
+
+/**
+ * email服务数据库，目前只考虑resend和nodemailer+aliyun sftp
+ */
+export interface EmailAuthConfig {
+    auth: EmailAuth;
+}

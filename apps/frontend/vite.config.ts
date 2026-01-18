@@ -21,4 +21,13 @@ export default defineConfig({
     },
   },
   envDir: resolve(__dirname, "../../"),
+  server: {
+    proxy: {
+      '/trpc': {
+        target: 'http://localhost:4000', // 转发给后端 Fastify
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 })

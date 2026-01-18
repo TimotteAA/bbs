@@ -8,6 +8,7 @@ import { toNodeHandler } from "better-auth/node";
 import { createContext } from "./context";
 import { type AppRouter, appRouter } from "./routers";
 import { auth } from "./auth";
+import { email } from "./plugins";
 
 const server = Fastify({
 	routerOptions: {
@@ -29,25 +30,8 @@ const { SERVER_PREFIX = "/trpc", SERVER_PORT = 4000, FRONTEND_URL = 'http://loca
 			credentials: true, 
 			methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 		});
-
-		// server.addContentTypeParser(
-        //     "application/json",
-        //     { parseAs: "string" },
-        //     (req, body, done) => {
-        //         // 针对
-        //         if (req.url.startsWith("/api/auth")) {
-        //             done(null, body);
-        //         } else {
-        //             // 其他路由正常解析 JSON
-        //             try {
-        //                 done(null, JSON.parse(body as string));
-        //             } catch (err: any) {
-        //                 err.statusCode = 400;
-        //                 done(err, undefined);
-        //             }
-        //         }
-        //     }
-        // );
+		// 配置email
+		await server.register(email)
 
 		// 3. 配置better-auth
 		// Register authentication endpoint

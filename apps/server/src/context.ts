@@ -5,12 +5,14 @@ export const createContext = async ({ req, res }: CreateFastifyContextOptions) =
   const session = await auth.api.getSession({
     headers: req.headers 
   });
+  const email = req.server.email;
 
   return {
     req,
     res,
     user: session?.user ?? null,
     session: session?.session ?? null,
+    email
   };
 };
 
