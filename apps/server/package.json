@@ -12,10 +12,8 @@
   },
   "scripts": {
     "dev": "pnpx tsx watch src/server.ts",
-    "db:push": "npx drizzle-kit push",
-    "db:mgg": "npx drizzle-kit generate",
-    "db:mgr": "npx drizzle-kit migrate",
-    "better-auth:generate": "pnpm dlx @better-auth/cli@latest generate"
+    "better-auth:generate": "pnpm dlx @better-auth/cli@latest generate",
+    "cli": "pnpm tsx ./cli/index.ts"
   },
   "keywords": [],
   "author": "",

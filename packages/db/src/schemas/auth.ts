@@ -1,6 +1,6 @@
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { users } from "./users";
-import { $defaults } from "../clients/comon";
+import { $defaults } from "../clients/common";
 
 
 export const session = sqliteTable("sessions", {

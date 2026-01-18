@@ -15,8 +15,6 @@ export const Route = createFileRoute('/auth/')({
 })
 
 function RouteComponent() {
-
-
   return <div> 
     <AuthForms />
   </div>

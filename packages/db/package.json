@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "./src/schema.ts",
   "types": "./src/schema.ts",
-   "peerDependencies": {
+  "peerDependencies": {
     "drizzle-orm": "^0.45.1",
     "drizzle-zod": "^0.8.3",
     "zod": "^4.3.5"
@@ -11,11 +11,15 @@
   "devDependencies": {
     "drizzle-orm": "^0.45.1",
     "drizzle-zod": "^0.8.3",
-    "zod": "^4.3.5",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "zod": "^4.3.5"
   },
   "exports": {
     ".": "./src/schemas/index.ts",
-    "./clients": "./src/clients/index.ts"
+    "./clients": "./src/clients/index.ts",
+    "./seeders": "./src/seeders/index.ts"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^10.2.0"
   }
 }
