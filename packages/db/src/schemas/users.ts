@@ -3,7 +3,8 @@ import { $defaults } from "../clients/common";
 
 
 export const users = sqliteTable("users_table", {
-  name: text({ length: 50 }).unique().notNull(),
+  name: text({ length: 50 }).notNull(), // 显示名称
+  username: text({ length: 50 }).unique(), // 用户名（用于登录）
   nickname: text({ length: 30 }),
   age: int(),
   email: text({ length: 100 }).unique().notNull(),

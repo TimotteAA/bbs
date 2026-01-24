@@ -21,7 +21,6 @@
     "@trpc/react-query": "^11.8.1",
     "@trpc/tanstack-react-query": "^11.8.1",
     "antd": "^6.1.4",
-    "better-auth": "^1.4.10",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },

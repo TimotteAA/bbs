@@ -11,7 +11,7 @@ export interface EmailSender {
 }
 
 
-// 3. 扩展 Fastify 类型
+// 扩展 Fastify 类型
 declare module 'fastify' {
     interface FastifyInstance {
         email: EmailSender;
@@ -58,16 +58,23 @@ const emailPlugin: FastifyPluginAsync = async (fastify, options) => {
 
             sender = {
                 async send(from, to, subject, template, data) {
-                    const htmlContent = `<div>[Template: ${template}]</div>`; 
-                    resendClient.emails.send({
-                        from, to, subject, html: htmlContent
-                    }).then(res => {
-                        fastify.log.info(`[Email Sent] result: ${JSON.stringify(res)}`);
-                    }).catch (err => {
+                    // 如果 template 以 < 开头，视为 HTML 内容；否则视为模板名称
+                    const htmlContent = template.startsWith('<') 
+                        ? template 
+                        : `<div>[Template: ${template}]</div>`; 
+                    try {
+                        const result = await resendClient.emails.send({
+                            from, 
+                            to, 
+                            subject, 
+                            html: htmlContent
+                        });
+                        fastify.log.info(`[Email Sent] result: ${JSON.stringify(result)}`);
+                        return result;
+                    } catch (err: any) {
                         fastify.log.error(`[Email Failed] ${err.message}`);
-                    })
-                    // 直接返回
-                    return true;
+                        throw err;
+                    }
                 }
             };
         } 

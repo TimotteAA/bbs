@@ -26,7 +26,7 @@ export const systemConfigs = sqliteTable('system_configs', {
     /**
      * 配置对象key
      */
-    key: text('key').notNull(), // e.g., 'email', 'storage', etc.
+    key: text('key').notNull(), // e.g., 'email', 'storage', 'system', etc.
     /**
      * 配置对象提供商
      */

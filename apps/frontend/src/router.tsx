@@ -4,7 +4,6 @@ import { createRouter as createTanStackRouter } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type React from "react";
 import type { AppRouter } from "@bbs/server";
-import { authClient } from "./utils";
 
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
@@ -34,7 +33,6 @@ export function createRouter() {
     context: {
       trpc,
       queryClient,
-      authClient
     },
     defaultPendingComponent: () => (
       <div>
