@@ -1,8 +1,9 @@
-import { Link, createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute } from "@tanstack/react-router";
+import { Button } from "@bbs/components/ui";
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute("/")({
   component: IndexComponent,
-})
+});
 
 function IndexComponent() {
   return (
@@ -15,9 +16,9 @@ function IndexComponent() {
       >
         Users
       </Link>
-      <Link to="/auth">
-      登录或者注册
-      </Link>
+      <Link to="/auth">Auth</Link>
+      <Button>shadcn Button!</Button>
+      <div className="mt-4">asdas</div>
     </div>
-  )
+  );
 }

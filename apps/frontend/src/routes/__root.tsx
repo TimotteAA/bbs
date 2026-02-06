@@ -1,40 +1,33 @@
-
 // apps/web/src/routes/__root.tsx
-import { createRootRouteWithContext,  } from '@tanstack/react-router'
-import { QueryClient } from '@tanstack/react-query'
-import { Outlet } from '@tanstack/react-router'
-import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import { TanStackDevtools } from '@tanstack/react-devtools'
+import { createRootRouteWithContext } from "@tanstack/react-router";
+import { QueryClient } from "@tanstack/react-query";
+import { Outlet } from "@tanstack/react-router";
+import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { TanStackDevtools } from "@tanstack/react-devtools";
 
+import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
+import type { AppRouter } from "@bbs/server";
 
-import type { TRPCOptionsProxy } from '@trpc/tanstack-react-query'
-import type { AppRouter } from '@bbs/server'
-
-// 1. 定义 Context 接口
 interface MyRouterContext {
   queryClient: QueryClient;
   trpc: TRPCOptionsProxy<AppRouter>;
 }
 
-// 2. 创建并导出根路由
-// 生成器会自动识别这个 export const Route
 export const Route = createRootRouteWithContext<MyRouterContext>()({
-component: () => (
+  component: () => (
     <>
       <Outlet />
       <TanStackDevtools
         config={{
-          position: 'bottom-right',
+          position: "bottom-right",
         }}
         plugins={[
           {
-            name: 'Tanstack Router',
+            name: "Tanstack Router",
             render: <TanStackRouterDevtoolsPanel />,
           },
         ]}
       />
     </>
   ),
-})
-
-
+});
