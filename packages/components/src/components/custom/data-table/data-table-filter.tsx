@@ -3,6 +3,11 @@ export type DataTableFilterType =
   | "text"
   | "select"
   | "date"
-  | "boolean";
+  | "boolean"
+  | "range"
+  | "autoComplete"
+  | "date";
 
-export interface DataTableFilterMeta {}
+export interface DataTableFilterMeta {
+  filterType: DataTableFilterType;
+}
