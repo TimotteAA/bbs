@@ -20,6 +20,11 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
+      // 和 packages/components/tsconfig.json 中的 paths 保持一致
+      // 与主项目进行区分
+      "~@": fileURLToPath(
+        new URL("../../packages/components/src", import.meta.url),
+      ),
     },
   },
   envDir: resolve(__dirname, "../../"),
