@@ -6,7 +6,7 @@ import {
 import Fastify from "fastify";
 import { createContext } from "./context";
 import { type AppRouter, appRouter } from "./routers";
-import { email } from "./plugins";
+import { email, redis } from "./plugins";
 
 const server = Fastify({
 	routerOptions: {
@@ -20,14 +20,16 @@ const { SERVER_PREFIX = "/trpc", SERVER_PORT = 4000, FRONTEND_URL = 'http://loca
 
 (async () => {
 	try {
-		// 1. 配置cors
+		// 配置cors
 		await server.register(cors, {
 			origin: true,
 			credentials: true, 
 			methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 		});
-		// 2. 配置email
+		// 配置email插件
 		await server.register(email);
+		// 配置redis插件
+		await server.register(redis);
 
 		// 3. 挂载trpc专属路径
 		await server.register(fastifyTRPCPlugin, {

@@ -3,14 +3,18 @@ import { AuthForms } from './-components/auth-form';
 
 export const Route = createFileRoute('/auth/')({
   component: RouteComponent,
-  async beforeLoad(ctx) {
-    // const authClient = ctx.context.authClient;
-    // const { data: session } = await authClient.getSession();
-    // if (session) {
-    //   throw redirect({
-    //     to: "/"
-    //   })
-    // }
+  async beforeLoad({ context: { trpc, queryClient } }) {
+    const {
+      data:{
+        user,
+        session
+      }
+    } = await queryClient.fetchQuery(trpc.auth.getSession.queryOptions());
+    if (user && session) {
+      throw redirect({
+        to: "/"
+      })
+    }
   },
 })
 

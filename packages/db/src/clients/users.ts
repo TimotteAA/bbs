@@ -1,5 +1,5 @@
 import { createInsertSchema, createUpdateSchema } from 'drizzle-zod';
-import { users } from '../schemas';
+import { user } from '../schemas';
 
-export const CreateUserSchema = createInsertSchema(users);
-export const updateUserSchema = createUpdateSchema(users);
+export const CreateUserSchema = createInsertSchema(user);
+export const updateUserSchema = createUpdateSchema(user);

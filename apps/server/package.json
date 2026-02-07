@@ -20,6 +20,7 @@
   "dependencies": {
     "@bbs/db": "workspace:^",
     "@fastify/cors": "^11.2.0",
+    "@fastify/redis": "^7.1.0",
     "@libsql/client": "^0.17.0",
     "@lucia-auth/adapter-drizzle": "^1.1.0",
     "@trpc/server": "^11.8.1",

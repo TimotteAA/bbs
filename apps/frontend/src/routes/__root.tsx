@@ -10,15 +10,14 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import type { TRPCOptionsProxy } from '@trpc/tanstack-react-query'
 import type { AppRouter } from '@bbs/server'
 
-// 1. 定义 Context 接口
-interface MyRouterContext {
+// 定义 Context 接口
+export interface RouterContext {
   queryClient: QueryClient;
   trpc: TRPCOptionsProxy<AppRouter>;
 }
 
-// 2. 创建并导出根路由
-// 生成器会自动识别这个 export const Route
-export const Route = createRootRouteWithContext<MyRouterContext>()({
+// 创建并导出根路由
+export const Route = createRootRouteWithContext<RouterContext>()({
 component: () => (
     <>
       <Outlet />

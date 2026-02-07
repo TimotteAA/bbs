@@ -18,6 +18,25 @@ import {
 import { useRouter } from '@tanstack/react-router';
 import { useMutation } from '@tanstack/react-query';
 import { trpc } from '@/router';
+import {
+  signUpSchema,
+  signInEmailSchema,
+  signInUsernameSchema,
+  sendOtpSchema,
+  verifyOtpSchema,
+} from '@bbs/db';
+
+// Zod schema 转 Ant Design 验证规则 (Zod v4)
+const createZodValidator = (schema: any, fieldName: string) => ({
+  async validator(_: any, value: any) {
+    const fieldSchema = schema.shape[fieldName];
+    if (!fieldSchema) return;
+    const result = fieldSchema.safeParse(value);
+    if (!result.success) {
+      throw new Error(result.error.issues[0]?.message);
+    }
+  },
+});
 
 // ==========================================
 // 辅助组件：发送验证码按钮
@@ -37,14 +56,19 @@ const SendCodeButton = ({ form, type }: { form: any, type: 'sign-in' | 'sign-up'
 
   const handleSendCode = async () => {
     const email = form.getFieldValue('email');
-    if (!email) {
-      message.error('请先输入邮箱');
+    const validation = sendOtpSchema.shape.email.safeParse(email);
+    if (!validation.success) {
+      message.error(validation.error.issues[0]?.message || '请输入有效邮箱');
       return;
     }
     try {
-      await sendOtpMutation.mutateAsync({ email, type });
-      setCountdown(60);
-      message.success('验证码已发送');
+      const result = await sendOtpMutation.mutateAsync({ email, type });
+      if (result.success) {
+        setCountdown(60);
+        message.success('验证码已发送');
+      } else {
+        message.error(result.errorDetail || '发送失败');
+      }
     } catch (e: any) {
       message.error(e.message || '发送失败');
     }
@@ -89,11 +113,15 @@ export const AuthForms = () => {
   // ==================== 1. 邮箱密码登录 ====================
   const handleEmailLogin = async (values: any) => {
     try {
-      await signInEmailMutation.mutateAsync({
+      const result = await signInEmailMutation.mutateAsync({
         email: values.email,
         password: values.password,
       });
-      onSuccess();
+      if (result.success) {
+        onSuccess();
+      } else {
+        message.error(result.errorDetail || '登录失败');
+      }
     } catch (e: any) {
       message.error(e.message || '登录失败');
     }
@@ -102,11 +130,15 @@ export const AuthForms = () => {
   // ==================== 2. 用户名密码登录 ====================
   const handleUsernameLogin = async (values: any) => {
     try {
-      await signInUsernameMutation.mutateAsync({
+      const result = await signInUsernameMutation.mutateAsync({
         username: values.username,
         password: values.password,
       });
-      onSuccess();
+      if (result.success) {
+        onSuccess();
+      } else {
+        message.error(result.errorDetail || '登录失败');
+      }
     } catch (e: any) {
       message.error(e.message || '登录失败');
     }
@@ -115,12 +147,16 @@ export const AuthForms = () => {
   // ==================== 3. 验证码登录 ====================
   const handleOtpLogin = async (values: any) => {
     try {
-      await verifyOtpMutation.mutateAsync({
+      const result = await verifyOtpMutation.mutateAsync({
         email: values.email,
         code: values.code,
         type: 'sign-in',
       });
-      onSuccess();
+      if (result.success) {
+        onSuccess();
+      } else {
+        message.error(result.errorDetail || '验证失败');
+      }
     } catch (e: any) {
       message.error(e.message || '验证失败');
     }
@@ -129,11 +165,12 @@ export const AuthForms = () => {
   // ==================== 4. GitHub 登录 ====================
   const handleGithubLogin = async () => {
     try {
-      const result = await fetch('/trpc/auth.githubAuthorize').then(r => r.json());
-      if (result.result?.data?.url) {
-        window.location.href = result.result.data.url;
+      const response = await fetch('/trpc/auth.githubAuthorize').then(r => r.json());
+      const result = response.result?.data;
+      if (result?.success && result?.data?.url) {
+        window.location.href = result.data.url;
       } else {
-        message.error('获取 GitHub 授权链接失败');
+        message.error(result?.errorDetail || '获取 GitHub 授权链接失败');
       }
     } catch (e: any) {
       message.error(e.message || 'GitHub 登录失败');
@@ -143,13 +180,17 @@ export const AuthForms = () => {
   // ==================== 5. 密码注册 ====================
   const handlePasswordRegister = async (values: any) => {
     try {
-      await signUpMutation.mutateAsync({
+      const result = await signUpMutation.mutateAsync({
         email: values.email,
         password: values.password,
         name: values.name,
         username: values.username,
       });
-      onSuccess();
+      if (result.success) {
+        onSuccess();
+      } else {
+        message.error(result.errorDetail || '注册失败');
+      }
     } catch (e: any) {
       message.error(e.message || '注册失败');
     }
@@ -158,13 +199,17 @@ export const AuthForms = () => {
   // ==================== 6. 验证码注册 ====================
   const handleOtpRegister = async (values: any) => {
     try {
-      await verifyOtpMutation.mutateAsync({
+      const result = await verifyOtpMutation.mutateAsync({
         email: values.email,
         code: values.code,
         type: 'sign-up',
         name: values.name,
       });
-      onSuccess();
+      if (result.success) {
+        onSuccess();
+      } else {
+        message.error(result.errorDetail || '注册失败');
+      }
     } catch (e: any) {
       message.error(e.message || '注册失败');
     }
@@ -190,10 +235,10 @@ export const AuthForms = () => {
       {/* 邮箱密码登录 */}
       {loginType === 'email' && (
         <Form onFinish={handleEmailLogin} {...formLayout}>
-          <Form.Item name="email" rules={[{ required: true, message: '请输入邮箱' }, { type: 'email' }]}>
+          <Form.Item name="email" rules={[createZodValidator(signInEmailSchema, 'email')]}>
             <Input prefix={<MailOutlined />} placeholder="邮箱" size="large" />
           </Form.Item>
-          <Form.Item name="password" rules={[{ required: true, message: '请输入密码' }]}>
+          <Form.Item name="password" rules={[createZodValidator(signInEmailSchema, 'password')]}>
             <Input.Password prefix={<LockOutlined />} placeholder="密码" size="large" />
           </Form.Item>
           <Form.Item>
@@ -205,10 +250,10 @@ export const AuthForms = () => {
       {/* 用户名密码登录 */}
       {loginType === 'username' && (
         <Form onFinish={handleUsernameLogin} {...formLayout}>
-          <Form.Item name="username" rules={[{ required: true, message: '请输入用户名' }]}>
+          <Form.Item name="username" rules={[createZodValidator(signInUsernameSchema, 'username')]}>
             <Input prefix={<UserOutlined />} placeholder="用户名" size="large" />
           </Form.Item>
-          <Form.Item name="password" rules={[{ required: true, message: '请输入密码' }]}>
+          <Form.Item name="password" rules={[createZodValidator(signInUsernameSchema, 'password')]}>
             <Input.Password prefix={<LockOutlined />} placeholder="密码" size="large" />
           </Form.Item>
           <Form.Item>
@@ -220,11 +265,11 @@ export const AuthForms = () => {
       {/* 验证码登录 */}
       {loginType === 'otp' && (
         <Form onFinish={handleOtpLogin} {...formLayout}>
-          <Form.Item name="email" rules={[{ required: true, message: '请输入邮箱' }, { type: 'email' }]}>
+          <Form.Item name="email" rules={[createZodValidator(verifyOtpSchema, 'email')]}>
             <Input prefix={<MailOutlined />} placeholder="邮箱" size="large" />
           </Form.Item>
           <Form.Item>
-            <Form.Item name="code" noStyle rules={[{ required: true, message: '请输入验证码' }]}>
+            <Form.Item name="code" noStyle rules={[createZodValidator(verifyOtpSchema, 'code')]}>
                <Input prefix={<SafetyOutlined />} placeholder="验证码" size="large" style={{ width: 'calc(100% - 110px)' }} />
             </Form.Item>
             <Form.Item noStyle shouldUpdate>
@@ -269,16 +314,16 @@ export const AuthForms = () => {
 
       {registerType === 'password' ? (
         <Form onFinish={handlePasswordRegister} {...formLayout}>
-          <Form.Item name="username" rules={[{ required: true, message: '请输入用户名' }]}>
+          <Form.Item name="username" rules={[createZodValidator(signUpSchema, 'username')]}>
             <Input prefix={<UserOutlined />} placeholder="用户名（用于登录）" size="large" />
           </Form.Item>
-          <Form.Item name="name" rules={[{ required: true, message: '请输入昵称' }]}>
+          <Form.Item name="name" rules={[createZodValidator(signUpSchema, 'name')]}>
             <Input prefix={<UserOutlined />} placeholder="昵称（显示名称）" size="large" />
           </Form.Item>
-          <Form.Item name="email" rules={[{ required: true, message: '请输入邮箱' }, { type: 'email' }]}>
+          <Form.Item name="email" rules={[createZodValidator(signUpSchema, 'email')]}>
             <Input prefix={<MailOutlined />} placeholder="邮箱" size="large" />
           </Form.Item>
-          <Form.Item name="password" rules={[{ required: true, message: '请输入密码' }]}>
+          <Form.Item name="password" rules={[createZodValidator(signUpSchema, 'password')]}>
             <Input.Password prefix={<LockOutlined />} placeholder="设置密码" size="large" />
           </Form.Item>
           <Form.Item 
@@ -306,14 +351,14 @@ export const AuthForms = () => {
         </Form>
       ) : (
         <Form onFinish={handleOtpRegister} {...formLayout}>
-          <Form.Item name="name" rules={[{ required: true, message: '请输入昵称' }]}>
+          <Form.Item name="name" rules={[createZodValidator(verifyOtpSchema, 'name')]}>
             <Input prefix={<UserOutlined />} placeholder="昵称（显示名称）" size="large" />
           </Form.Item>
-          <Form.Item name="email" rules={[{ required: true, message: '请输入邮箱' }, { type: 'email' }]}>
+          <Form.Item name="email" rules={[createZodValidator(verifyOtpSchema, 'email')]}>
             <Input prefix={<MailOutlined />} placeholder="邮箱" size="large" />
           </Form.Item>
           <Form.Item>
-            <Form.Item name="code" noStyle rules={[{ required: true, message: '请输入验证码' }]}>
+            <Form.Item name="code" noStyle rules={[createZodValidator(verifyOtpSchema, 'code')]}>
               <Input prefix={<SafetyOutlined />} placeholder="验证码" size="large" style={{ width: 'calc(100% - 110px)' }} />
             </Form.Item>
             <Form.Item noStyle shouldUpdate>
